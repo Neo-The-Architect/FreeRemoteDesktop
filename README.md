@@ -8,12 +8,24 @@ It replaces metered third-party desktop execution with a local tool server. MIT 
 
 ## One-click Claude Desktop install (MCP Bundle)
 
-Build and install the \`FreeRemoteDesktop-0.2.1.mcpb\` bundle using \`python pack_mcpb.py\`.
+Build and install the `FreeRemoteDesktop-0.3.0.mcpb` bundle using `python pack_mcpb.py`.
 Choose this bundle from Claude Desktop's Extensions > Install Extension.
 Select your approved workspace when prompted. Requires an MCPB host supporting the
 UV runtime. This package does **not** embed Python; the host UV runtime manages it.
-The manifest is validated with \`@anthropic-ai/mcpb\`; actual Claude GUI installation
+The manifest is validated with `@anthropic-ai/mcpb`; actual Claude GUI installation
 has not yet been tested.
+
+## Engineering Studio and offline operations
+
+- Zero-model-call engineering recipes: python frd.py recipes, then use
+  python frd.py run git_status --workspace /your/project.
+- Optional local-model Studio: python local_studio.py, then visit
+  http://127.0.0.1:8899 on the computer. Ollama and a tool-capable model required.
+- Live private screen preview and browser actions are disabled by default.
+- Remote ChatGPT bridge uses the official Secure MCP Tunnel with user-supplied
+  credentials and appropriate ChatGPT workspace entitlements.
+
+Read CONNECTIVITY.md for setup and limitations and ROADMAP.md for ship gates.
 
 ## Quick start
 
@@ -44,11 +56,17 @@ changes another agent's configuration.
 | desktop_status | enabled |
 | list_directory | enabled within roots |
 | read_text_file | enabled within roots |
+| search_text / read_lines | bounded and enabled within roots |
+| list_job_recipes / job_history | enabled |
+| run_job | requires local allow_jobs permission |
+| search_text / read_lines | enabled within roots and bounded |
+| list_job_recipes / job_history | enabled |
+| run_job | disabled; explicit local permission required |
 | write_text_file | disabled |
 | run_command | disabled; exact command allowlist |
 | capture_screen | disabled; requires Pillow |
-| gui_click | disabled; requires PyAutoGUI |
-| browser_navigate / browser_snapshot / browser_screenshot / browser_click | disabled; Playwright + hostname allowlist; click also requires allow_gui |
+| gui_click / gui_type / gui_hotkey | disabled; requires PyAutoGUI |
+| browser_navigate / browser_snapshot / browser_screenshot / browser_click / browser_fill | disabled; Playwright + hostname allowlist; click also requires allow_gui |
 
 Set the exact approved workspace paths and enable capabilities locally by editing
 `~/.freeremotedesktop/config.json`. The user must explicitly opt in for every dangerous
@@ -57,9 +75,42 @@ capability. Avoid adding sensitive paths to `roots`. File-name checks are not a 
 Optional dependencies:
 ```sh
 python -m pip install pillow pyautogui playwright
-python -m playwright install chromium
+python -m playwright install chromium  # optional if Google Chrome is installed
 ```
 The normal read-only installation has **zero third-party Python dependencies**.
+
+## Offline mode — zero AI inference calls
+
+The built-in `frd.py` CLI runs locally with Python and no model, API key or chatbot:
+
+```sh
+python frd.py recipes
+python frd.py status
+python frd.py run git_status --workspace /absolute/path/to/repository
+python frd.py run python_compile --workspace /absolute/path/to/project
+python frd.py history
+```
+
+Opt in with `allow_jobs: true` in your local permission configuration, and set the
+approved root to the project. `python_tests` separately requires
+`allow_test_execution: true` because tests execute project-defined code.
+
+To run a deterministic recipe continuously without invoking any model:
+
+```sh
+python frd.py schedule git_status --workspace /absolute/path/to/repository --every-seconds 3600
+```
+
+This foreground scheduler runs until interrupted; it is *not* a persistent OS service.
+No AI-generated changes or new instructions occur in offline mode. Workflow receipts
+are stored in `~/.freeremotedesktop/jobs.jsonl`.
+
+## Token-efficient MCP retrieval
+
+Use `search_text` to return up to 50 relevant line previews rather than entire files,
+and `read_lines` for exact 1–150-line windows. All use the approved root policy,
+skipping known sensitive filename patterns. This reduces irrelevant context, not the
+per-token rate charged by an AI provider.
 
 ## HTTP mode (local integration only)
 
@@ -101,7 +152,7 @@ MCP client -> STDIO transport -> policy-gated tools -> local computer
 
 ## Current release status
 
-**Developer preview v0.2.1; not ready for public production.** Remote authentication,
+**Developer preview v0.3.0; not ready for public production.** Remote authentication,
 visual UI, full screen-streaming, per-action approvals,
 machine-level integration tests, signed installers, packaging, cross-platform CI and
 public vulnerability review remain to be implemented and verified.

@@ -1,8 +1,8 @@
 {
   "manifest_version": "0.4",
   "name": "freeremotedesktop",
-  "version": "0.2.1",
-  "description": "Self-hosted permission-first desktop MCP tools for local coding assistants",
+  "version": "0.3.0",
+  "description": "Offline engineering recipes, scoped retrieval, and permission-first local MCP desktop tools",
   "author": {
     "name": "Efficient Labs",
     "url": "https://github.com/Neo-The-Architect/FreeRemoteDesktop"

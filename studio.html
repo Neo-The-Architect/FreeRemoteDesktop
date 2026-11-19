@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FreeRemoteDesktop Studio</title><link rel="stylesheet" href="/style.css"></head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="identity"><div class="logo">FR<span>D</span></div><div><strong>FreeRemoteDesktop</strong><small>Local Studio / 0.3</small></div></div>
+    <div class="section-label">WORKSPACE</div>
+    <label class="field-label" for="workspace">Approved project path</label>
+    <input id="workspace" placeholder="Select a project in your local permissions" spellcheck="false">
+    <p class="hint">Access never exceeds your local policy.</p>
+    <div class="section-label">LIVE DESKTOP</div>
+    <button class="recipe" id="previewBtn">Start private preview<small>Screen permission required</small></button>
+    <div class="screenFrame" id="screenFrame" hidden><img id="screenImage" alt="Local desktop preview"></div>
+    <div class="section-label">HEADLESS BROWSER</div>
+    <input id="url" type="url" placeholder="https://approved.example" spellcheck="false">
+    <button class="recipe" id="browserBtn">Read approved URL<small>Browser permission required</small></button>
+    <div class="section-label">ENGINEERING RECIPES</div>
+    <div id="recipes" class="recipes"></div>
+    <div class="sidebar-footer"><span class="dot"></span><span>Private localhost · No cloud relay</span></div>
+  </aside>
+  <main class="main">
+    <header class="topbar"><div><span class="eyebrow">EFFICIENT LABS / OPEN SOURCE</span><h1>Engineering Studio</h1></div>
+      <div class="status"><span class="dot"></span><span id="status">Connecting locally</span></div></header>
+    <div class="modelbar"><label for="model">LOCAL MODEL</label><select id="model"><option>Detecting Ollama models…</option></select>
+      <button id="refresh" class="quiet">Refresh</button></div>
+    <section class="chat" id="chat" aria-live="polite">
+      <div class="welcome"><div class="glyph">⌘</div><h2>Your tools, your machine.</h2><p>Choose a local model to chat without a metered AI API, or run deterministic jobs with zero model inference. All destructive actions require approval here and must also pass your local permissions policy.</p></div>
+    </section>
+    <section class="approvals" id="approvals" hidden><h3>Approval required</h3><div id="pending"></div></section>
+    <form id="composer" class="composer"><textarea id="prompt" rows="2" placeholder="Ask about your code or workspace…" maxlength="8000" aria-label="Message"></textarea>
+      <button id="send" type="submit">Send <span>↗</span></button></form>
+    <div class="footnote">No external AI inference by default · Local model still consumes compute and tokens internally · Review actions before approval</div>
+  </main>
+</div><script src="/studio.js"></script>
+</body></html>

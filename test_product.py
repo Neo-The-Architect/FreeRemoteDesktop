@@ -15,7 +15,7 @@ class ProductTests(unittest.TestCase):
         r=respond({"jsonrpc":"2.0","id":1,"method":"initialize","params":{}})
         self.assertEqual(r["result"]["serverInfo"]["name"],"FreeRemoteDesktop")
     def test_tools(self):
-        self.assertEqual(len(respond({"jsonrpc":"2.0","id":2,"method":"tools/list"})["result"]["tools"]),11)
+        self.assertEqual(len(respond({"jsonrpc":"2.0","id":2,"method":"tools/list"})["result"]["tools"]),19)
     def test_read(self):
         self.assertEqual(action("read_text_file",{"path":str(self.root/"hello.txt")},self.cfg)["text"],"hello")
     def test_list(self):

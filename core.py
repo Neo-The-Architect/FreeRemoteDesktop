@@ -16,7 +16,7 @@ DENIED_SUFFIX = {".pem", ".pfx", ".p12", ".key", ".kdbx"}
 def defaults():
     return {"roots": [],
             "allow_write": False, "allow_shell": False, "allow_screen": False,
-            "allow_gui": False, "allow_browser": False,
+            "allow_gui": False, "allow_browser": False, "allow_jobs": False, "allow_test_execution": False,
             "shell_commands": ["git status", "git diff", "git log", "python --version",
                                "node --version", "npm --version"],
             "browser_hosts": [], "max_file_bytes": MAX_TEXT}
@@ -64,8 +64,17 @@ def result(name, args):
         return {"content":[{"type":"text","text":str(e)}],"isError":True}
 
 def action(name: str, a: dict[str,Any], cfg: dict):
+    if name in {"read_lines","search_text"}:
+        from retrieval import read_lines,search_text
+        if name=="read_lines":return read_lines(a["path"],a["start"],a["end"],cfg)
+        return search_text(a["path"],a["query"],cfg)
+    if name in {"list_job_recipes","run_job","job_history"}:
+        from jobs import run,history,recipes
+        if name=="list_job_recipes":return recipes()
+        if name=="job_history":return history(a.get("limit",20))
+        return run(a["recipe"],a["workspace"],cfg)
     if name == "desktop_status":
-        return {"name":"FreeRemoteDesktop","version":"0.2.1","host":platform.node(),
+        return {"name":"FreeRemoteDesktop","version":"0.3.0","host":platform.node(),
                 "platform":platform.system(),"roots":cfg["roots"],
                 "capabilities":{k:v for k,v in cfg.items() if k.startswith("allow_")}}
     if name == "list_directory":
@@ -126,7 +135,29 @@ def action(name: str, a: dict[str,Any], cfg: dict):
         pyautogui.FAILSAFE=True
         pyautogui.click(x=x,y=y)
         return {"clicked":[x,y]}
-    if name in {"browser_navigate","browser_snapshot","browser_click","browser_screenshot"}:
+    if name == "gui_type":
+        if not cfg["allow_gui"]: raise PermissionError("GUI input disabled")
+        value=a["text"]
+        if not isinstance(value,str) or not 1<=len(value)<=3000:
+            raise ValueError("Text length must be 1..3000")
+        try: import pyautogui
+        except ImportError: raise RuntimeError("Install optional dependency: pip install pyautogui")
+        pyautogui.FAILSAFE=True
+        pyautogui.write(value,interval=0.015)
+        return {"typed_characters":len(value)}
+    if name == "gui_hotkey":
+        if not cfg["allow_gui"]: raise PermissionError("GUI input disabled")
+        keys=a["keys"]
+        combinations={("ctrl","a"),("ctrl","c"),("ctrl","v"),("ctrl","z"),
+                      ("ctrl","s"),("shift","tab"),("tab",),("enter",),("esc",)}
+        if not isinstance(keys,list) or tuple(keys) not in combinations:
+            raise PermissionError("Hotkey not in safe subset")
+        try: import pyautogui
+        except ImportError: raise RuntimeError("Install optional dependency: pip install pyautogui")
+        pyautogui.FAILSAFE=True
+        pyautogui.hotkey(*keys)
+        return {"pressed":keys}
+    if name in {"browser_navigate","browser_snapshot","browser_click","browser_fill","browser_screenshot"}:
         from browser_agent import perform
         return perform(name,a,cfg)
     raise ValueError("Unknown tool")
@@ -134,12 +165,24 @@ def action(name: str, a: dict[str,Any], cfg: dict):
 def tool(name, description, properties=None, required=None, read_only=True):
     return {"name":name, "description":description,
             "annotations":{"readOnlyHint":read_only,"destructiveHint":not read_only,
-                           "openWorldHint":name in {"browser_open"}},
+                           "openWorldHint":name in {"browser_navigate","browser_click"}},
             "inputSchema":{"type":"object","properties":properties or {},
                            "required":required or [],"additionalProperties":False}}
 
 PATH={"path":{"type":"string","description":"Absolute path under configured approved roots"}}
 TOOLS=[
+ tool("read_lines","Read at most 150 numbered lines of a scoped text file",
+      {**PATH,"start":{"type":"integer","minimum":1},"end":{"type":"integer","minimum":1}},["path","start","end"]),
+ tool("search_text","Search bounded project files locally and return concise line previews",
+      {**PATH,"query":{"type":"string","minLength":2,"maxLength":200}},["path","query"]),
+
+ tool("list_job_recipes","List deterministic workflows that make zero model calls"),
+ tool("run_job","Execute a locally approved, deterministic workspace workflow; requires allow_jobs",
+      {"recipe":{"type":"string","enum":["git_status","git_diff_summary","python_compile","python_tests"]},
+       "workspace":{"type":"string"}},["recipe","workspace"],False),
+ tool("job_history","List receipts for recent local deterministic jobs",
+      {"limit":{"type":"integer","minimum":1,"maximum":100}}),
+
  tool("desktop_status","Return desktop hostname, roots, and enabled capabilities"),
  tool("list_directory","List up to 200 entries in a permitted folder",PATH,["path"]),
  tool("read_text_file","Read a UTF-8 file within configured size limits",PATH,["path"]),
@@ -151,10 +194,16 @@ TOOLS=[
  tool("capture_screen","Capture primary desktop as PNG; requires explicit opt-in",read_only=True),
  tool("gui_click","Click primary desktop screen coordinates; requires explicit opt-in",
       {"x":{"type":"integer"},"y":{"type":"integer"}},["x","y"],False),
+ tool("gui_type","Type short text into current focused GUI element, requires explicit local GUI opt-in",
+      {"text":{"type":"string","maxLength":3000}},["text"],False),
+ tool("gui_hotkey","Press an allowlisted keyboard shortcut, requires explicit GUI opt-in",
+      {"keys":{"type":"array","items":{"type":"string"}}},["keys"],False),
  tool("browser_navigate","Open allowlisted HTTPS URL in persistent headless browser",
       {"url":{"type":"string"}},["url"],True),
  tool("browser_snapshot","Read the visible browser page text",read_only=True),
  tool("browser_click","Click browser element by CSS selector; requires gui+browser capabilities",
       {"selector":{"type":"string"}},["selector"],False),
+ tool("browser_fill","Fill a non-password browser form field by CSS selector; requires browser+GUI opt-in",
+      {"selector":{"type":"string"},"text":{"type":"string","maxLength":3000}},["selector","text"],False),
  tool("browser_screenshot","Capture the current browser viewport as an image",read_only=True)
 ]

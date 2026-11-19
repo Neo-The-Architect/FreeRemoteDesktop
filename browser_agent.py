@@ -31,7 +31,13 @@ def start(cfg):
         except ImportError: raise RuntimeError("Install browser extras: pip install playwright && playwright install chromium")
         pw=sync_playwright().start()
         try:
-            browser=pw.chromium.launch(headless=True)
+            try:
+                browser=pw.chromium.launch(headless=True)
+            except Exception as missing_browser:
+                # If the bundled Chromium is absent, reuse an installed Chrome channel.
+                # A separate headless browser profile avoids touching the user's live tab session.
+                try: browser=pw.chromium.launch(headless=True,channel="chrome")
+                except Exception: raise RuntimeError("Install Playwright Chromium or Google Chrome") from missing_browser
             page=browser.new_page(accept_downloads=False,service_workers="block")
             page.route("**/*",lambda route:_route(route,cfg))
             _state.update({"playwright":pw,"browser":browser,"page":page})
@@ -62,6 +68,20 @@ def perform(name,args,cfg):
             page.locator(selector).first.click(timeout=5000)
             _check(page.url,cfg)
             return {"url":page.url,"title":page.title()}
+        if name=="browser_fill":
+            if not cfg.get("allow_gui"): raise PermissionError("Browser interaction requires allow_gui")
+            page=start(cfg)
+            _check(page.url,cfg)
+            selector=args["selector"]
+            value=args["text"]
+            if len(selector)>500 or not isinstance(value,str) or len(value)>3000:
+                raise ValueError("Invalid browser fill arguments")
+            locator=page.locator(selector).first
+            if locator.get_attribute("type")=="password":
+                raise PermissionError("Password fields are not handled by browser_fill")
+            locator.fill(value,timeout=5000)
+            _check(page.url,cfg)
+            return {"url":page.url,"filled_selector":selector,"characters":len(value)}
         if name=="browser_screenshot":
             page=start(cfg)
             _check(page.url,cfg)

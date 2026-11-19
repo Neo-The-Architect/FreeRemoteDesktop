@@ -19,6 +19,13 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - uses: astral-sh/setup-uv@v6
       - run: python test_product.py
+      - run: python test_jobs.py
+      - run: python test_retrieval.py
+      - run: python test_studio.py
+      - run: python test_fallback.py
+      - run: python test_studio_http.py
+      - run: python test_adapters.py
+      - run: python connect_chatgpt.py plan
       - run: python pack_mcpb.py
       - run: python test_bundle.py
       - run: python -m compileall -q .

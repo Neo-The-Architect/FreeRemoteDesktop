@@ -4,10 +4,10 @@ ROOT=pathlib.Path(__file__).resolve().parent
 class BundleTests(unittest.TestCase):
     def test_mcpb_files(self):
         import zipfile
-        path=ROOT/"FreeRemoteDesktop-0.2.1.mcpb"
+        path=ROOT/"FreeRemoteDesktop-0.3.0.mcpb"
         if not path.exists(): self.skipTest("Run python pack_mcpb.py first")
         with zipfile.ZipFile(path) as z:
-            self.assertTrue({"manifest.json","server.py","core.py","browser_agent.py","pyproject.toml"}.issubset(z.namelist()))
+            self.assertTrue({"manifest.json","server.py","core.py","browser_agent.py","jobs.py","retrieval.py","frd.py","local_studio.py","studio.html","studio.js","style.css","pyproject.toml"}.issubset(z.namelist()))
     def test_uv_stdio_and_root_override(self):
         with tempfile.TemporaryDirectory() as temp:
             env={**os.environ,"FRD_APPROVED_ROOT":temp}

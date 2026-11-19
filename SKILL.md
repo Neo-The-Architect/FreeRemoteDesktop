@@ -34,3 +34,10 @@ No claim is made that tool execution is free from model inference or plan limits
 Use concise status and scoped paths. Avoid repeatedly requesting the entire tree.
 Use exact allowlisted local commands for deterministic checks and surface only results.
 Avoid returning screenshot images when plain text can answer the question.
+
+## Model-free continuation
+
+When the agent's model quota is exhausted, the operator can run pre-approved
+local recipes with frd.py. A deterministic recipe does not think or change its
+plan; it executes exactly its known steps. Optionally a local Ollama model can
+continue reasoning using on-device resources and zero paid cloud-inference calls.

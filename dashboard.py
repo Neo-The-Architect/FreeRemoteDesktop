@@ -27,6 +27,8 @@ class UI:
         card2=tk.Frame(f,bg=PANEL,padx=18,pady=15);card2.pack(fill="x",pady=7)
         tk.Label(card2,text="CAPABILITIES",font=("Segoe UI",11,"bold"),fg=FG,bg=PANEL).pack(anchor="w",pady=(0,8))
         labels=[
+            ("allow_jobs","Run deterministic jobs","Model-free Git checks and approved build validation"),
+            ("allow_test_execution","Execute project test code","Runs user project Python test code; trusted repos only"),
             ("allow_write","Write project files","Creates or replaces files inside the workspace"),
             ("allow_shell","Run approved commands","Only exact commands on your allowlist"),
             ("allow_screen","Capture desktop screenshots","May reveal private windows and notifications"),
