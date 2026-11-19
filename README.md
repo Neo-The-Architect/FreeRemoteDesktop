@@ -160,3 +160,12 @@ public vulnerability review remain to be implemented and verified.
 ## License
 
 MIT. Copyright 2026 Efficient Labs contributors.
+
+## Local no-paid-API engineering chat (experimental)
+
+Install Ollama and a local tool-capable model, then run:
+
+    ollama pull qwen2.5-coder:1.5b
+    python local_agent.py --model qwen2.5-coder:1.5b
+
+This uses local inference without paid API credentials. It does not bypass ChatGPT or Claude usage limits. Local models still process tokens on your CPU/GPU. The agent requires confirmation for every tool call and `--non-interactive` denies all tool actions. Small models are limited for complex engineering; production reliability is not established.
