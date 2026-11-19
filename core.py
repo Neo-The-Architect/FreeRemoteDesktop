@@ -14,7 +14,7 @@ DENIED = {".ssh", ".aws", ".gnupg", ".kube", ".git-credentials", ".npmrc", ".env
 DENIED_SUFFIX = {".pem", ".pfx", ".p12", ".key", ".kdbx"}
 
 def defaults():
-    return {"roots": [str(pathlib.Path.home() / "Documents")],
+    return {"roots": [],
             "allow_write": False, "allow_shell": False, "allow_screen": False,
             "allow_gui": False, "allow_browser": False,
             "shell_commands": ["git status", "git diff", "git log", "python --version",
@@ -23,9 +23,17 @@ def defaults():
 
 def load():
     if not CONFIG.is_file():
-        return defaults()
-    value = json.loads(CONFIG.read_text(encoding="utf-8"))
-    return {**defaults(), **value}
+        value=defaults()
+    else:
+        value=json.loads(CONFIG.read_text(encoding="utf-8"))
+    config = {**defaults(), **value}
+    env_root=os.environ.get("FRD_APPROVED_ROOT")
+    if env_root:
+        path=pathlib.Path(env_root).expanduser().resolve()
+        if not path.is_dir() or path == pathlib.Path.home().resolve() or path == pathlib.Path(path.anchor):
+            raise ValueError("FRD_APPROVED_ROOT must be a specific existing workspace directory")
+        config["roots"]=[str(path)]
+    return config
 
 def audit(name, status, detail=""):
     APP.mkdir(parents=True, exist_ok=True)
@@ -57,7 +65,7 @@ def result(name, args):
 
 def action(name: str, a: dict[str,Any], cfg: dict):
     if name == "desktop_status":
-        return {"name":"FreeRemoteDesktop","version":"0.2.0","host":platform.node(),
+        return {"name":"FreeRemoteDesktop","version":"0.2.1","host":platform.node(),
                 "platform":platform.system(),"roots":cfg["roots"],
                 "capabilities":{k:v for k,v in cfg.items() if k.startswith("allow_")}}
     if name == "list_directory":

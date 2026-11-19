@@ -1,4 +1,4 @@
-name: Python test suite
+name: Python and MCP bundle verification
 
 on:
   push:
@@ -17,5 +17,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+      - uses: astral-sh/setup-uv@v6
       - run: python test_product.py
+      - run: python pack_mcpb.py
+      - run: python test_bundle.py
       - run: python -m compileall -q .

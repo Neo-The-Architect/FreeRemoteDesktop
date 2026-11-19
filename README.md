@@ -6,6 +6,15 @@ A model-neutral, self-hosted Model Context Protocol (MCP) desktop bridge.
 FreeRemoteDesktop does not operate an LLM, bypass model subscriptions, or promise free tokens.
 It replaces metered third-party desktop execution with a local tool server. MIT licensed.
 
+## One-click Claude Desktop install (MCP Bundle)
+
+Build and install the \`FreeRemoteDesktop-0.2.1.mcpb\` bundle using \`python pack_mcpb.py\`.
+Choose this bundle from Claude Desktop's Extensions > Install Extension.
+Select your approved workspace when prompted. Requires an MCPB host supporting the
+UV runtime. This package does **not** embed Python; the host UV runtime manages it.
+The manifest is validated with \`@anthropic-ai/mcpb\`; actual Claude GUI installation
+has not yet been tested.
+
 ## Quick start
 
 Requirements: Python 3.10+; Windows, macOS or Linux (GUI capture is primarily tested on Windows).
@@ -24,7 +33,7 @@ python setup.py install --client claude-desktop
 ```
 
 Restart the selected client. Invoke `desktop_status` to confirm.
-Configuration is created at `~/.freeremotedesktop/config.json`, and existing
+Fresh installations start with zero approved roots; choose one project directory in the dashboard or edit the config. Configuration is created at `~/.freeremotedesktop/config.json`, and existing
 Codex/Claude config is backed up before editing. The installer never silently
 changes another agent's configuration.
 
@@ -92,7 +101,7 @@ MCP client -> STDIO transport -> policy-gated tools -> local computer
 
 ## Current release status
 
-**Developer preview v0.2.0; not ready for public production.** Remote authentication,
+**Developer preview v0.2.1; not ready for public production.** Remote authentication,
 visual UI, full screen-streaming, per-action approvals,
 machine-level integration tests, signed installers, packaging, cross-platform CI and
 public vulnerability review remain to be implemented and verified.

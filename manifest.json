@@ -1,0 +1,45 @@
+{
+  "manifest_version": "0.4",
+  "name": "freeremotedesktop",
+  "version": "0.2.1",
+  "description": "Self-hosted permission-first desktop MCP tools for local coding assistants",
+  "author": {
+    "name": "Efficient Labs",
+    "url": "https://github.com/Neo-The-Architect/FreeRemoteDesktop"
+  },
+  "homepage": "https://github.com/Neo-The-Architect/FreeRemoteDesktop",
+  "license": "MIT",
+  "keywords": [
+    "desktop",
+    "mcp",
+    "coding",
+    "automation",
+    "self-hosted"
+  ],
+  "server": {
+    "type": "uv",
+    "entry_point": "server.py",
+    "mcp_config": {
+      "env": {
+        "FRD_APPROVED_ROOT": "${user_config.approved_root}"
+      },
+      "command": "uv",
+      "args": [
+        "run",
+        "--project",
+        "${__dirname}",
+        "python",
+        "${__dirname}/server.py"
+      ]
+    }
+  },
+  "user_config": {
+    "approved_root": {
+      "type": "directory",
+      "title": "Approved workspace folder",
+      "description": "Only this project directory is accessible. Do not select your home directory.",
+      "required": true
+    }
+  },
+  "tools_generated": true
+}

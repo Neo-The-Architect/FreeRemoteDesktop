@@ -11,7 +11,7 @@ def respond(message):
     method=message.get("method")
     if method=="initialize":
         value={"protocolVersion":VERSION,"capabilities":{"tools":{"listChanged":False}},
-               "serverInfo":{"name":"FreeRemoteDesktop","version":"0.2.0"}}
+               "serverInfo":{"name":"FreeRemoteDesktop","version":"0.2.1"}}
     elif method=="ping":
         value={}
     elif method=="tools/list":
@@ -35,7 +35,7 @@ def stdio():
 
 class Handler(http.server.BaseHTTPRequestHandler):
     token=""
-    server_version="FreeRemoteDesktop/0.2"
+    server_version="FreeRemoteDesktop/0.2.1"
     def do_POST(self):
         if self.path!="/mcp":
             return self.send_error(404)

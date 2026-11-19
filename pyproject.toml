@@ -1,0 +1,9 @@
+[project]
+name = "freeremotedesktop"
+version = "0.2.1"
+description = "Self-hosted MCP desktop bridge"
+requires-python = ">=3.10"
+dependencies = []
+
+[tool.uv]
+package = false
